@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShopEasy — Student Amazon Clone (Enhanced)</title>
+  <style>
+    :root{
+      --bg:#f2f5f9;--card:#ffffff;--muted:#6b7280;--accent:#ff9900;--dark-bg:#0b1220;--glass:rgba(255,255,255,0.06)
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Poppins',sans-serif;margin:0;background:var(--bg);color:#0f172a;transition:background .3s,color .3s}
+
+    header{background:linear-gradient(90deg,#111827 0%, #0b1220 100%);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+    .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+    .brand .logo{background:var(--accent);color:#111;padding:6px 10px;border-radius:6px;font-weight:700}
+    .search{flex:1;display:flex;align-items:center;gap:8px}
+    .search input{flex:1;padding:10px 12px;border-radius:8px;border:none;outline:none}
+    .search .clear{background:transparent;border:none;color:#ddd;cursor:pointer}
+    .actions{display:flex;align-items:center;gap:10px}
+    .icon-btn{background:rgba(255,255,255,0.06);border:none;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .mode-btn{background:transparent;border:1px solid rgba(255,255,255,0.08);color:#fff;padding:6px 8px;border-radius:8px;cursor:pointer}
+
+    .container{max-width:1180px;margin:20px auto;padding:0 18px}
+    .hero{display:flex;gap:18px;align-items:center}
+    .hero .left{flex:1}
+    .hero .right{width:300px}
+    .banner{background:linear-gradient(135deg, rgba(255,153,0,0.12), rgba(59,130,246,0.08));padding:22px;border-radius:12px}
+    .banner h1{margin:0;font-size:22px}
+    .banner p{margin-top:6px;color:var(--muted)}
+
+    .controls{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+    .select, .chip{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ef;background:var(--card);cursor:pointer}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:20px}
+    .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(12,18,30,0.06);position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s}
+    .card:hover{transform:translateY(-6px);box-shadow:0 18px 45px rgba(12,18,30,0.12)}
+    .badge{position:absolute;left:-40px;top:12px;background:#ef4444;color:#fff;padding:6px 48px;transform:rotate(-30deg);font-weight:700;font-size:12px}
+    .wishlist{position:absolute;right:12px;top:12px;background:transparent;border:none;cursor:pointer;font-size:18px}
+    .thumb{height:150px;width:100%;object-fit:contain;border-radius:8px;background:linear-gradient(180deg,#f8fafc,#fff)}
+    .title{font-size:15px;margin-top:10px;min-height:44px}
+    .price-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+    .price{font-weight:700}
+    .add{background:var(--accent);border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+
+    .cart-floating{position:fixed;right:18px;bottom:18px;background:linear-gradient(180deg,#111827,#0b1220);color:#fff;padding:12px;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.3);z-index:60;display:flex;flex-direction:column;gap:10px;width:320px}
+    .cart-floating.hidden{display:none}
+    .cart-items{max-height:260px;overflow:auto}
+    .cart-item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px}
+    .cart-item img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+    .qty{display:flex;gap:6px;align-items:center}
+    .qty button{width:26px;height:26px;border-radius:6px;border:none;background:#f1f5f9;cursor:pointer}
+    .total{font-weight:800;text-align:right}
+
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;background:#111827;color:#fff;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .4s}
+    .toast.show{opacity:1;pointer-events:auto}
+
+    .modal{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;z-index:70;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal.open{opacity:1;pointer-events:auto}
+    .modal .panel{background:var(--card);padding:18px;border-radius:12px;max-width:780px;width:96%}
+
+    footer{margin-top:40px;padding:24px;text-align:center;color:var(--muted)}
+
+    /* dark */
+    body.dark{background:#071223;color:#e6eef8}
+    body.dark .card{background:#071426}
+    body.dark .banner{background:linear-gradient(135deg, rgba(255,153,0,0.06), rgba(59,130,246,0.04))}
+    body.dark .select{background:#082032;color:#cfe7ff}
+    body.dark .chip{background:#081824;color:#cfe7ff}
+
+    /* responsive tweaks */
+    @media(max-width:880px){
+      .hero{flex-direction:column}
+      .hero .right{width:100%}
+      .cart-floating{width:92%;right:4%;left:4%}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand" onclick="scrollToTop()"><div class="logo">ShopEasy</div><div style="color:#d1d5db;font-size:13px">Student Store</div></div>
+    <div class="search" role="search">
+      <input id="searchInput" placeholder="Search products, e.g. backpack or lamp" aria-label="Search products" />
+      <button class="icon-btn" id="clearSearch" title="Clear">✖</button>
+      <button class="icon-btn" id="searchBtn" title="Search">🔍</button>
+    </div>
+    <div class="actions">
+      <button class="mode-btn" id="modeToggle" title="Toggle dark mode">🌙</button>
+      <button class="icon-btn" id="openCartTop" title="Open cart">🛒 <span id="miniCount">0</span></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="left">
+        <div class="banner">
+          <h1>Build, Learn, Shop — Student-first UI</h1>
+          <p>Modern responsive Amazon-like demo with interactive cart, live search and dark mode.</p>
+        </div>
+
+        <div class="controls">
+          <div class="select" id="sort">Sort: <span id="sortBy">Relevance</span></div>
+          <div class="chip" id="filterAll">All Categories</div>
+          <div class="chip" id="filterDeals">Deals <small style="margin-left:6px;color:var(--muted)">(discounts)</small></div>
+        </div>
+
+        <div id="grid" class="grid" aria-live="polite"></div>
+      </div>
+
+      <aside class="right">
+        <div style="background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(12,18,30,0.06);">
+          <h3 style="margin:0">Quick Tips</h3>
+          <p style="color:var(--muted);font-size:14px;margin-top:8px">Click product to view details, hit Add to add item. Use the cart to update quantities. Perfect for a college demo.</p>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="select" onclick="applyFilter('all')">All</button>
+            <button class="select" onclick="applyFilter('electronics')">Electronics</button>
+            <button class="select" onclick="applyFilter('books')">Books</button>
+            <button class="select" onclick="applyFilter('home')">Home</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <div id="cartFloating" class="cart-floating hidden" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong>Your Cart</strong><button onclick="toggleCartFloating()" style="background:none;border:none;color:#fff;cursor:pointer">✖</button></div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="total">Total: $<span id="grandTotal">0.00</span></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="add" onclick="checkout()">Checkout</button>
+        <button class="select" onclick="clearCart()">Clear</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status">Toast</div>
+
+    <div id="modal" class="modal" role="dialog" aria-modal="true">
+      <div class="panel" id="modalPanel">
+        <!-- filled dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <footer>Made by <strong>Madhesh</strong> • Student project • Demo only</footer>
+
+  <script>
+    // Sample catalog with categories & discounts
+    const products = [
+      {id:1,title:'Bluetooth Earphones',price:29.99,cat:'electronics',img:"61gOCNIvudL._AC_SL1500_.jpg",discount:15,desc:'Lightweight wireless earphones with 20h battery.'},
+      {id:2,title:'Laptop Stand',price:22.50,cat:'electronics',img:'8199s2tKUuL._AC_SL1500_.jpg',discount:10,desc:'Ergonomic laptop stand, foldable and portable.'},
+      {id:3,title:'The Alchemist (Book)',price:12.99,cat:'books',img:'OIP.WEBP',discount:5,desc:'A bestselling novel about following your dreams.'},
+      {id:4,title:'Aroma Diffuser',price:24.00,cat:'home',img:'aroma.WEBP',discount:20,desc:'Ultrasonic diffuser for calm and focus.'},
+      {id:5,title:'Stainless Bottle',price:18.00,cat:'home',img:'bottle.WEBP',discount:0,desc:'Keeps drinks cold for 24 hours.'},
+      {id:6,title:'Backpack (College)',price:40.00,cat:'home',img:'bag.WEBP',discount:30,desc:'Durable backpack with laptop pocket.'},
+      {id:7,title:'Notebook — Ruled',price:6.50,cat:'books',img:'note.WEBP',discount:0,desc:'200-page ruled notebook for notes.'},
+      {id:8,title:'Power Bank 10,000mAh',price:34.99,cat:'electronics',img:'power.WEBP',discount:12,desc:'Slim power bank with fast charge.'}
+    ];
+
+    // State
+    let state = {
+      list: products.slice(),
+      cart: JSON.parse(localStorage.getItem('shop_cart') || '{}'),
+      wishlist: JSON.parse(localStorage.getItem('shop_wl') || '{}'),
+      query: '',
+      dark: (localStorage.getItem('shop_dark')==='1')
+    };
+
+    // Utilities
+    const $ = (id)=>document.getElementById(id);
+    function saveState(){ localStorage.setItem('shop_cart', JSON.stringify(state.cart)); localStorage.setItem('shop_wl', JSON.stringify(state.wishlist)); localStorage.setItem('shop_dark', state.dark ? '1' : '0'); }
+    function format(n){ return Number(n).toFixed(2); }
+
+    // Render grid
+    function renderGrid(list = state.list){
+      const grid = $('grid'); grid.innerHTML='';
+      list.forEach(p=>{
+        const el = document.createElement('article'); el.className='card'; el.innerHTML = `
+          <div class="badge">${p.discount ? p.discount+'% OFF' : ''}</div>
+          <button class="wishlist" aria-label="wishlist">${state.wishlist[p.id] ? '♥' : '♡'}</button>
+          <img class='thumb' src='${p.img}' alt='${p.title}' />
+          <div class='title'>${p.title}</div>
+          <div style='color:var(--muted);font-size:13px'>${p.cat}</div>
+          <div class='price-row'>
+            <div><div class='price'>$${format(p.price)}</div></div>
+            <div><button class='add'>Add</button></div>
+          </div>
+        `;
+        // click handlers
+        el.querySelector('.thumb').addEventListener('click', ()=>openModal(p.id));
+        el.querySelector('.add').addEventListener('click', ()=>{ addToCart(p.id); });
+        el.querySelector('.wishlist').addEventListener('click', (e)=>{ e.stopPropagation(); toggleWishlist(p.id, el.querySelector('.wishlist')); });
+        grid.appendChild(el);
+      });
+      updateMiniCount();
+    }
+
+    // Search (debounced)
+    let searchTimer=null;
+    $('searchInput').addEventListener('input', (e)=>{
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(()=>{
+        state.query = e.target.value.trim().toLowerCase(); applyFilters();
+      }, 300);
+    });
+    $('clearSearch').addEventListener('click', ()=>{ $('searchInput').value=''; state.query=''; applyFilters(); });
+    $('searchBtn').addEventListener('click', ()=>{ state.query = $('searchInput').value.trim().toLowerCase(); applyFilters(); });
+
+    function applyFilters(){
+      let res = products.filter(p=>{
+        const q = state.query;
+        return !q || p.title.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
+      });
+      if(document.body.classList.contains('dark')){
+        // just example: no special action
+      }
+      renderGrid(res);
+    }
+
+    // Cart functions
+    function addToCart(id){
+      const prod = products.find(x=>x.id===id);
+      if(!state.cart[id]) state.cart[id] = {...prod, qty:0};
+      state.cart[id].qty += 1;
+      saveState(); renderCart(); showToast('Added to cart ✅');
+    }
+    function renderCart(){
+      const el = $('cartItems'); el.innerHTML='';
+      const items = Object.values(state.cart);
+      if(items.length===0){ el.innerHTML = '<div style="color:var(--muted)">Cart is empty</div>'; $('grandTotal').textContent='0.00'; updateMiniCount(); return; }
+      let total=0;
+      items.forEach(it=>{
+        total += it.price * it.qty;
+        const row = document.createElement('div'); row.className='cart-item';
+        row.innerHTML = `
+          <img src='${it.img}' alt='${it.title}' />
+          <div style='flex:1'>${it.title}<div style='color:var(--muted);font-size:13px'>$${format(it.price)} x ${it.qty}</div></div>
+          <div class='qty'>
+            <button data-id='${it.id}' class='dec'>−</button>
+            <div style='min-width:22px;text-align:center'>${it.qty}</div>
+            <button data-id='${it.id}' class='inc'>+</button>
+          </div>
+        `;
+        el.appendChild(row);
+      });
+      $('grandTotal').textContent = format(total);
+      // attach inc/dec
+      document.querySelectorAll('.inc').forEach(b=>b.addEventListener('click', ()=>{ const id=b.dataset.id; state.cart[id].qty++; saveState(); renderCart(); updateMiniCount(); }));
+      document.querySelectorAll('.dec').forEach(b=>b.addEventListener('click', ()=>{ const id=b.dataset.id; state.cart[id].qty--; if(state.cart[id].qty<=0) delete state.cart[id]; saveState(); renderCart(); updateMiniCount(); }));
+      updateMiniCount();
+    }
+
+    function updateMiniCount(){
+      const count = Object.values(state.cart).reduce((s,i)=>s+(i.qty||0),0);
+      $('miniCount').textContent = count; $('miniCount').setAttribute('aria-label', count+' items in cart');
+    }
+
+    function toggleCartFloating(){
+      const c = $('cartFloating'); const hidden = c.classList.contains('hidden');
+      if(hidden){ c.classList.remove('hidden'); c.setAttribute('aria-hidden','false'); renderCart(); } else { c.classList.add('hidden'); c.setAttribute('aria-hidden','true'); }
+    }
+
+    // Wishlist
+    function toggleWishlist(id, btnEl){
+      if(state.wishlist[id]){ delete state.wishlist[id]; btnEl.textContent='♡'; showToast('Removed from wishlist'); }
+      else{ state.wishlist[id]=true; btnEl.textContent='♥'; showToast('Added to wishlist'); }
+      saveState();
+    }
+
+    // Modal detail
+    function openModal(id){ const p = products.find(x=>x.id===id); const modal = $('modal'); const panel = $('modalPanel');
+      panel.innerHTML = `
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <img src='${p.img}' alt='${p.title}' style='width:320px;height:220px;object-fit:contain;border-radius:8px' />
+          <div style='flex:1'>
+            <h2 style='margin-top:0'>${p.title}</h2>
+            <p style='color:var(--muted)'>${p.desc}</p>
+            <p style='font-size:18px;font-weight:700;margin-top:8px'>$${format(p.price)} ${p.discount?" <span style=\"color:#ef4444;font-weight:600;margin-left:8px\">"+p.discount+"% OFF</span>":""}</p>
+            <div style='margin-top:12px;display:flex;gap:8px'>
+              <button class='add' onclick='addToCart(${p.id});closeModal()'>Add to cart</button>
+              <button class='select' onclick='closeModal()'>Close</button>
+            </div>
+          </div>
+        </div>
+      `; modal.classList.add('open');
+    }
+    function closeModal(){ $('modal').classList.remove('open'); }
+    $('modal').addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
+
+    // Toast
+    let toastTimer=null;
+    function showToast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1800); }
+
+    // Dark mode
+    function applyMode(){ if(state.dark){ document.body.classList.add('dark'); $('modeToggle').textContent='☀️'; } else { document.body.classList.remove('dark'); $('modeToggle').textContent='🌙'; } }
+    $('modeToggle').addEventListener('click', ()=>{ state.dark = !state.dark; applyMode(); saveState(); });
+
+    // Checkout & persistence
+    function checkout(){ if(Object.keys(state.cart).length===0){ showToast('Cart empty 😅'); return; } alert('Checkout demo — not real. Total: $'+$('grandTotal').textContent); }
+    function clearCart(){ state.cart={}; saveState(); renderCart(); showToast('Cart cleared'); }
+
+    function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+
+    // small helpers
+    function applyFilter(cat){ if(cat==='all') renderGrid(products); else renderGrid(products.filter(p=>p.cat===cat)); }
+
+    // wire up top open cart
+    $('openCartTop').addEventListener('click', ()=>{ toggleCartFloating(); renderCart(); });
+
+    // initial render
+    if(state.dark) document.body.classList.add('dark'); applyMode(); renderGrid(); renderCart();
+
+    // save on unload
+    window.addEventListener('beforeunload', saveState);
+  </script>
+</body>
+</html>
